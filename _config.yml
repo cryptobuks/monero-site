@@ -3,7 +3,7 @@ name: Monero
 description: Monero is a digital currency that is secure, private, and untraceable.
 keywords: "monero, xmr, bitmonero, cryptocurrency"
 baseurl: ""
-url: "https://getmonero.org"
+url: "https://www.getmonero.org"
 
 markdown: kramdown
 
@@ -11,11 +11,29 @@ markdown: kramdown
 # TODO: smart quotes are actually quite pretty, so this is perhaps better handled via a plugin that reverts them for CLI blocks
 kramdown:
     smart_quotes: ["apos", "apos", "quot", "quot"]
+    input: GFM
 
-exclude: ["README.md"]
-gems: [jekyll-paginate]
+exclude: ["README.md", "CONTRIBUTING.md", "LICENSE"]
+
+# paginate
 paginate: 10
 paginate_path: blog/page:num/
+
+plugins:
+  - jekyll-paginate
+  - jekyll-multiple-languages-plugin
+  - jekyll-feed
+
+feed:
+  posts_limit: 20
+
+# jekyll-multiple-languages-plugin settings:
+languages: ["en", "es", "it", "pl", "fr", "ar", "ru", "de", "nl", "pt-br", "tr", "zh-cn", "zh-tw", "nb-no"]
+
+
+exclude_from_localizations: ["img", "css", "fonts", "media", "404.html", "feed.xml", "meta", "_posts", "legal", "blog"]
+
+
 
 # Windows live tiles config
 ie_tile_color: eeeeee
@@ -34,4 +52,4 @@ sitemap:
         - "/ietemplates/poll4.xml"
         - "/ietemplates/poll5.xml"
         - "/feed.xml"
-        - "/404/index.md"
+        - "/404.html"

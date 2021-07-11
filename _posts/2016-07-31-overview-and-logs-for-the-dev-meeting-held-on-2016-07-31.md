@@ -2,17 +2,15 @@
 layout: post
 title: Overview and Logs for the Dev Meeting Held on 2016-07-31
 summary: Monero Project repository, and brief update on Ring CT
-tags: [dev diaries, core, crypto, 0mq]
+tags: [dev diaries, core, crypto]
 author: dEBRUYNE / fluffypony
 ---
 
-*July 31th, 2016*
-
-# Overview 
+### Overview 
 
 -
 
-# Logs
+### Logs
 
 **\<fluffypony>** time for meeting to start   
 **\<i2p-relay> {-anonimal}** Are we not having a meeting?  

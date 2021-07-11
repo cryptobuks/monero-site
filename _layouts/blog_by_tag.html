@@ -1,5 +1,7 @@
-<!DOCTYPE html>
-<html>
+---
+layout: custom
+---
+ 
   {% assign filename = page.path | remove: '.md' | split: '/' | last %}
   {% for data_tag in site.data.tags %}
 	{% if data_tag.slug == filename %}
@@ -7,35 +9,120 @@
 	{% endif %}
   {% endfor %}
 
-  {% include head.html %}
-
-  <body>
-
-    {% include header.html %}
-
-    <div class="container main-content">
-
-		<div class="page-title">
-		  <!-- Icon is based on work by Sergiu Bagrin (http://pixelkit.com) and is licensed under Creative Commons BY 3.0 -->
-		  <img src="//static.getmonero.org/images/icon_tags.svg" class="title-icon"><h2 class="inline">{% t tags.all %}: <span class="kicks">{{ tag.name }}</span></h2>
-		</div>
-
-		<div>
-			{% if site.tags[tag.slug] %}
-				{% for post in site.tags[tag.slug] %}
-				  <h3><a href="{{ post.url }}">{{ post.title }}</a></h3>
-				  <blockquote>
-					{{ post.summary }}
-				  </blockquote>
-				{% endfor %}
-			{% else %}
-				<h3>{% t tags.notags %}</h3>
-			{% endif %}
-		</div>
+<div class="blog">
+  <!-- Category selector: desktop -->
+    <div class="container full">
+        <div class="info-block blog-nav row">
+            <div class="col"><a href="{{ site.baseurl }}/blog/">{% t blog.allposts %}</a></div>
+            <div class="col {% if filename == 'urgent' %}checked{% endif %}"><a href="{{ site.baseurl }}/blog/tags/urgent.html">{% t blog.urgent %}</a></div>
+            <div class="col {% if filename == 'releases' %}checked{% endif %}"><a href="{{ site.baseurl }}/blog/tags/releases.html">{% t blog.releases %}</a></div>
+            <div class="col {% if filename == 'community' %}checked{% endif %}"><a href="{{ site.baseurl }}/blog/tags/community.html">{% t blog.community %}</a></div>
+            <div class="col {% if filename == 'dev diaries' %}checked{% endif %}"><a href="{{ site.baseurl }}/blog/tags/dev%20diaries.html">{% t blog.meetinglogs %}</a></div>
+        </div>
     </div>
+  <!-- End category selector: desktop -->
+  <!-- Category selector: mobile -->
+  <div class="container full">
+      <div class="info-block row center-xs" id="pick-platform">
+          <div class="mob dropdowndrop">
+              <input id="filter" type="checkbox" name="category-filter"/>
+              <label for="filter">{% t blog.filter %}</label>
+              <ul id="menu">
+                  <li><a href="{{ site.baseurl }}/blog/">{% t blog.allposts %}</a></li>
+                  <li><a href="{{ site.baseurl }}/blog/tags/urgent.html">{% t blog.urgent %}</a></li>
+                  <li><a href="{{ site.baseurl }}/blog/tags/releases.html">{% t blog.releases %}</a></li>
+                  <li><a href="{{ site.baseurl }}/blog/tags/community.html">{% t blog.community %}</a></li>
+                  <li><a href="{{ site.baseurl }}/blog/tags/dev%20diaries.html">{% t blog.meetinglogs %}</a></li>
+              </ul>
+          </div>
+      </div>
+  </div>
+  <!-- End category selector: mobile -->
+</div>
 
-    {% include footer.html %}
+<div class="site-wrap">
+    <section class="container">
+            <div class="row">
+                <!-- left two-thirds block-->
+                <div class="left two-thirds col-lg-8 col-md-8 col-sm-8 col-xs-12">
+                  <div class="info-block">
+                        <div class="row center-xs">
+                          <div class="page-title">
+                          {% if tag.name != "Dev Diaries" %}
+                            <h2 class="inline"><span class="kicks">{{ tag.name }}</span></h2>
+                          {% else %}
+                            <h2 class="inline"><span class="kicks">{% t blog.meetinglogs %}</span></h2>
+                          {% endif %}
+		          </div>
+                        </div>
+                       {% if site.tags[tag.slug] %}
+		         {% for post in site.tags[tag.slug] %}
+                  <div class="post-lead">
+                      <h3><a href="{{ post.url }}">{{ post.title }}</a></h3>
+                      <p>
+                        {{ post.summary }}
+                      </p>
+                      <p><small>
+                        {% t blog.author %} {{ post.author }} | {{ post.date | date: "%-d %B %Y" }}
+                        </small>
+                      </p>
+                  </div>
+                
+                         {% endfor %}
+                       {% else %}
+                        <h3>{% t tags.notags %}</h3>
+                       {% endif %}
+                    
+                    </div>
+                </div>
+                <!-- end left two-thirds block-->
+                
+                <!-- right one-third block-->
+                <div class="right one-third col-lg-4 col-md-4 col-sm-12 col-xs-12">
+                        <div class="sidebar col-sm-12 col-xs-12">   
+                            <div class="info-block">
+                                <div class="row center-xs">
+                                    <div class="col"><h2>Recent Posts</h2></div>
+                                </div>
+                                {% for post in site.posts limit:4 %}
+                                <div class="row start-xs info-block-row">
+                                    <div class="col">
+                                         <p><a href="{{ post.url }}">{{ post.title }}</a></p>
+                                     </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            <div class="info-block">
+                                <div class="row center-xs">
+                                    <div class="col">
+                                        <h2>Popular Tags</h2>
+                                    </div>
+                                </div>
+                                {% capture taglist %}
+                                  {% for site_tag in site.tags %}
+                                    {% for data_tag in site.data.tags %}
+                                      {% if data_tag.slug == site_tag[0] %}
+                                        ;{{ site_tag[1].size | plus: 100000 }}#{{ data_tag.name }}#{{ data_tag.slug }}
+                                      {% endif %}
+                                    {% endfor %}
+                                  {% endfor %}
+                                {% endcapture %}
+                                {% assign sortedtags = taglist | strip | remove_first: ';' | split:';' | sort | reverse %}
+                                {% for tagitem in sortedtags limit: 6 %}
+                                  {% assign pop_tag = tagitem | strip |  split: '#' %}
+                                    <div class="row start-xs">
+                                        <div class="col">
+                                             <p><a href="/blog/tags/{{ pop_tag[2] }}.html">{{ pop_tag[1] }}</a></p>
+                                         </div>
+                                     </div>
+                                     {% endfor %}
 
-  </body>
 
-</html>
+                            </div>
+                        </div> 
+                </div>
+                <!-- end right one-third block-->
+            </div>
+        </section>
+    <a href="#" class="arrow-up" aria-label="{% t accessibility.arrowup %}" title="{% t accessibility.gotop %}"><i></i></a>
+</div>

@@ -1,29 +1,57 @@
-    <div class="footer">
-      <div class="container">
-        <p>
-          <strong style="color: #ffffff;">[ <a href="/legal/terms">{% t global.terms %}</a> | <a href="/legal/privacy">{% t global.privacy %}</a> | <a href="/legal/copyright">{% t global.copyright %}</a> ]</strong>
-          <a href="https://getmonero.org/feed.xml"><i class="fa fa-2x fa-rss-square"></i></a>
-          <a href="mailto:dev@getmonero.org"><i class="fa fa-2x fa-envelope-square"></i></a>
-        </p>
-      </div>
-    </div>
+<footer class="container-fluid">
+            <div class="container">
+                <div class="row around-xs footer-wrapper">
+                     <div class="col-sm-3 col-xs-6">
+                         <h3>{% t navigation.resources %}</h3>
+                            <ul class="list-unstyled">
+                                <li><a class="white" href="{{ site.baseurl }}/resources/about/">{% t titles.about %}</a></li>
+                                <li><a class="white" href="{{ site.baseurl }}/resources/moneropedia/">Moneropedia</a></li>
+                                <li><a class="white" href="{{ site.baseurl }}/resources/developer-guides/">{% t titles.developerguides %}</a></li>
+                                <li><a class="white" href="{{ site.baseurl }}/resources/user-guides/">{% t titles.userguides %}</a></li>
+                                <li><a class="white" href="{{ site.baseurl }}/library/">{% t titles.library %}</a></li>
+                                <li><a class="white" href="{{ site.baseurl }}/downloads/">{% t titles.downloads %}</a></li>
+                                
+                            </ul>
+                     </div>
+                     <div class="col-sm-3 col-xs-6">
+                        <h3>{% t footer.reachout %}</h3>
+                            <ul class="list-unstyled">
+                                 <li><a class="white" href="{{ site.baseurl}}/community/team/">{% t titles.workgroups %}</a></li>
+                                 <li><a class="white" href="{{ site.baseurl}}/community/hangouts/">{% t titles.hangouts %}</a></li>
+                                 <li><a class="white" href="https://lists.getmonero.org/postorius/lists/monero-announce.lists.getmonero.org/">{% t footer.ml %}</a></li>
 
-
-    <!-- JS -->
-    <script src="//static.getmonero.org/scripts.js"></script>
-    <script type="text/javascript">
-        $(document).ready(function(){
-            $('[data-toggle="tooltip"]').tooltip();   
-        });
-
-		(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-		(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-		m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-		})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
-
-		ga('create', 'UA-53312765-1', 'auto');
-		ga('require', 'linkid', 'linkid.js');
-		ga('send', 'pageview');
-	</script>
-    
-    {% include hostflag.html %}
+                            </ul>
+                    </div>
+                    <div class="col-sm-3 col-xs-6">
+                        <h3>{% t navigation.community %}</h3>
+                            <ul class="list-unstyled">
+                                 <li><a class="white" href="{{ site.baseurl}}/community/merchants/">{% t titles.merchants %}</a></li>
+                                 <li><a class="white" href="https://monero.stackexchange.com/">Stack Exchange</a></li>
+                                 <li><a class="white" href="https://bitcointalk.org/index.php?topic=583449.0">BitcoinTalk</a></li>
+                                 <li><a class="white" href="https://translate.getmonero.org/">Weblate</a></li>
+                            </ul>
+                    </div>
+                    <div class="col-sm-3 col-xs-6">
+                        <h3>{% t global.monero_project %}</h3>
+                            <ul class="list-unstyled">
+                                 <li><a class="white" href="https://openalias.org/">Open Alias</a></li>
+                                 <li><a class="white" href="{{ site.baseurl }}/resources/research-lab/">{% t titles.researchlab %}</a></li>
+                                 <li><a class="white" href="{{ site.baseurl }}/press-kit/">{% t titles.presskit %}</a></li>
+                                 <li><a class="white" href="https://ccs.getmonero.org">{% t footer.ccs %}</a></li>
+                            </ul>
+                    </div>
+                <div class="row center-xs">
+                    <div class="footer-links">
+                        <ul class="list-unstyled list-inline">
+                            <li><a href="{% include onion.html %}" class="white footer-link"><img class="tor" src="/img/onion-tor.svg" alt="onion service">Tor Onion Service</a></li>
+                             <li><a href="{{ site.baseurl }}/legal/" class="white footer-link">{% t footer.legal %}</a></li>
+                             <li><a href="https://github.com/monero-project/monero-site" class="white footer-link">{% t footer.source %}</a></li>
+                             <li><a href="{{ site.baseurl}}/sitemap.xml" class="white footer-link">Sitemap</a></li>
+                             <li><a class="white" href="{{ site.baseurl_root }}/feed.xml"><img src="/img/feed.svg" width="30" height="30" alt="Feed icon">{% t footer.feed %}</a></li>
+                        </ul>
+                    </div>
+                </div>
+                </div>
+            </div>
+</footer>
+{% include hostflag.html %}
