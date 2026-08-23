@@ -1,3 +1,6 @@
 ietemplates/
 _site/*
 .idea/
+*.swp
+.jekyll-cache/
+.jekyll-metadata

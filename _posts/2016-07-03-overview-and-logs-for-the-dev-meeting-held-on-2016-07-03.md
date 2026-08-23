@@ -2,17 +2,15 @@
 layout: post
 title: Overview and Logs for the Dev Meeting Held on 2016-07-03
 summary: OTF, open PRs and issues, and brief update on Ring CT 
-tags: [dev diaries, core, crypto, 0mq]
+tags: [dev diaries, core, crypto]
 author: dEBRUYNE / fluffypony
 ---
 
-*July 3th, 2016*
-
-# Overview (by Aerbax)
+### Overview (by Aerbax)
 
 An overview [can be found on Hello Monero](https://hellomonero.com/article/monero-bi-weekly-dev-meeting-note-highlights-2016-07-03)
 
-# Logs
+### Logs
 
 **\<fluffypony>** time for meeting to start   
 **\<hyc>** ok  

@@ -1,0 +1,29 @@
+---
+layout: base
+---
+    <div class="site-wrap">
+    <!-- FULL WIDTH BLOCK -->
+        <section class="container full guides">
+                <div class="info-block text-adapt">
+                    {% if page.deprecated_url_docs %}
+                        <div class="info-block center-xs">
+                            <h3 style="padding: 0;">⚠️ This page is deprecated</h3>
+                            <p>The latest version of this document is available at <a href="{{ site.docsurl }}{{ page.deprecated_url_docs }}">Monero Docs</a>.</p>
+                        </div>
+                    {% elsif page.warning_url  %}
+                        <div class="info-block center-xs">
+                            <h3 style="padding: 0;">⚠️ {{ page.warning_title }}</h3>
+                            <p>{{ page.warning_body }} <a href="{{ page.warning_url }}">{{ page.warning_url_label }}</a>.</p>
+                        </div>
+                    {% endif %}
+                    <div>
+                        {{content}}
+                        <p style="text-align: right;">
+                            <a href="{{ site.baseurl }}/resources/user-guides/">&laquo; {% t user-guides.back %}</a>
+                        </p>
+                    </div>
+                    <a href="#" class="arrow-up" aria-label="{% t accessibility.arrowup %}" title="{% t accessibility.gotop %}"><i></i></a>
+                </div>
+        </section>
+    <!-- END FULL WIDTH BLOCK -->
+    </div>

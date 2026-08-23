@@ -1,0 +1,18 @@
+chats:
+- monero:
+  matrix: https://matrix.to/#/%23monero:monero.social
+
+- monero-community:
+  matrix: https://matrix.to/#/%23monero-community:monero.social
+
+- monero-markets:
+  matrix: https://matrix.to/#/%23monero-markets:monero.social
+
+- monero-offtopic:
+  matrix: https://matrix.to/#/%23monero-offtopic:monero.social
+
+- monero-mining:
+  matrix: https://matrix.to/#/%23xmrmine:matrix.org
+
+- monero-support:
+  matrix: https://matrix.to/#/#monero-support:monero.social

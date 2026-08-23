@@ -1,0 +1,225 @@
+---
+name: Validate Hashes
+on:
+  push:
+    paths:
+      - 'downloads/hashes.txt'
+      - '_data/downloads.yml'
+      - '_data/contributing.yml'
+  pull_request:
+    paths:
+      - 'downloads/hashes.txt'
+      - '_data/downloads.yml'
+      - '_data/contributing.yml'
+  workflow_dispatch:
+jobs:
+  validate-hashes:
+    name: Validate Hashes
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v6
+      - name: Install dependencies
+        run: |
+          sudo apt-get install -y --no-install-recommends curl gpg jq python3-pip zbar-tools
+          sudo pip3 install yq
+      - name: Verify hashes.txt + contributing.yml + wallet-generator signature
+        run: |
+          curl -sL https://raw.githubusercontent.com/monero-project/monero/master/utils/gpg_keys/binaryfate.asc |
+            gpg --import
+          gpg --verify downloads/hashes.txt
+          gpg --verify _data/contributing.yml.asc
+          gpg --verify resources/wallet-generator/wallet-generator.html.asc
+          mkdir resources/wallet-generator/validate_sig
+          unzip resources/wallet-generator/wallet-generator.zip -d resources/wallet-generator/validate_sig
+          gpg --verify resources/wallet-generator/validate_sig/wallet-generator.html.asc
+      - name: Verify General Fund donation QR's
+        run: |
+          yaml="_data/contributing.yml"
+          get_yaml_value() {
+              awk -v key="$1:" '$1 == key {print $2}' "$yaml"
+          }
+          for coin in xmr btc; do
+              qr_checksum=$(get_yaml_value "qr_${coin}_checksum")
+              qr_filename=$(get_yaml_value "qr_${coin}_filename")
+              qr_content=$(get_yaml_value "qr_${coin}_content")
+              echo "DEBUG: $qr_checksum $qr_filename"
+              echo "DEBUG: $qr_content"
+              # Confirm hashes match
+              echo "$qr_checksum $qr_filename" | sha256sum -c
+              # Scan QR content 
+              qr_scanned=$(zbarimg -q --raw "$qr_filename")
+              # Compare scanned content with expected content
+              if [ "$qr_scanned" = "$qr_content" ]; then
+                  echo "${coin^^} QR code content matches exactly"
+              else
+                  echo "${coin^^} QR code content does not match"
+                  echo "Scanned: $qr_scanned"
+                  echo "Expected: $qr_content"
+                  exit 1
+              fi
+          done
+      - name: Verify filenames
+        run: |
+          lines="$(grep -v ^# downloads/hashes.txt)"
+          SAVEIFS=$IFS
+          IFS=$'\n'
+          lines=($lines)
+          IFS=$SAVEIFS
+          
+          version_gui=$(awk '/monero-gui-source-v/ {print $2}' downloads/hashes.txt | awk -F".tar.bz2" '{print $1}' | awk -F"-" '{print $4}')
+          version_cli=$(awk '/monero-source-v/ {print $2}' downloads/hashes.txt | awk -F".tar.bz2" '{print $1}' | awk -F"-" '{print $3}')
+
+          filenames_cli=()
+          filenames_gui=()
+
+          get_filename(){
+              line=$1
+              the_line=($line)
+              length="${#the_line[@]}"
+              ((length-=1))
+              filename="${the_line[$length]}"
+              echo "${filename}"
+          }
+          # expects cli files between lines 2-14 and gui 15-19 (comments do not count, 1st line = 0)
+          # to add a new file to the cli, $num must be -gt 1 and -lt 16.
+          # gui $num is now -gt 15 and -lt 21 (new line has been added above)
+          # a new gui file will only increase the -lt number by 1
+          # changes to extensions / new files must be reflected in the cli_files / gui_files lists below
+          num=0
+          for line in "${lines[@]}"; do
+              if [ $num -gt 1 ] && [ $num -lt 15 ] ; then
+                  #CLI
+                  filename=$(get_filename "${line}")
+                  filenames_cli+=("${filename}")
+              elif [ $num -gt 14 ] && [ $num -lt 21 ] ; then
+                 #GUI
+                  filename=$(get_filename "${line}")
+                  filenames_gui+=("${filename}")
+              fi
+              ((num+=1))
+          done
+          # edit/add/remove filenames below
+          cli_files=(\
+          "monero-android-armv7-${version_cli}.tar.bz2" \
+          "monero-android-armv8-${version_cli}.tar.bz2" \
+          "monero-freebsd-x64-${version_cli}.tar.bz2" \
+          "monero-linux-armv7-${version_cli}.tar.bz2" \
+          "monero-linux-armv8-${version_cli}.tar.bz2" \
+          "monero-linux-riscv64-${version_cli}.tar.bz2" \
+          "monero-linux-x64-${version_cli}.tar.bz2" \
+          "monero-linux-x86-${version_cli}.tar.bz2" \
+          "monero-mac-armv8-${version_cli}.tar.bz2" \
+          "monero-mac-x64-${version_cli}.tar.bz2" \
+          "monero-win-x64-${version_cli}.zip" \
+          "monero-win-x86-${version_cli}.zip" \
+          "monero-source-${version_cli}.tar.bz2")
+
+          gui_files=(\
+          "monero-gui-install-win-x64-${version_gui}.exe" \
+          "monero-gui-linux-x64-${version_gui}.tar.bz2" \
+          "monero-gui-mac-x64-${version_gui}.dmg" \
+          "monero-gui-mac-armv8-${version_gui}.dmg" \
+          "monero-gui-win-x64-${version_gui}.zip" \
+          "monero-gui-source-${version_gui}.tar.bz2")
+
+          check_filenames(){
+              local -n file_list=$1
+              local -n hardcoded=$2
+              for f in "${file_list[@]}"; do
+                if [[ "${hardcoded[*]}" =~ "${f}" ]]; then
+                    echo "Filename OK: ${f}"
+                else
+                    echo "Filename BAD: ${f}"
+                    exit 1
+                fi
+              done
+          }
+
+          check_filenames filenames_cli cli_files
+          check_filenames filenames_gui gui_files
+      - name: Download releases
+        run: |
+          for file in $(awk '/monero-/ {print $2}' downloads/hashes.txt); do
+              [ -f $file ] && continue
+              echo Downloading $file...
+              dir=cli
+              if [[ $file =~ gui ]]; then
+                  dir=gui
+              fi
+              url=https://dlsrc.getmonero.org/${dir}/${file}
+              curl -sLO $url
+          done
+      - name: Verify hashes.txt hashes
+        run: |
+          grep monero- downloads/hashes.txt | sha256sum -c
+      - name: Verify downloads.yml hashes
+        run: |
+          yq -r '.[] | .[0].downloads[] | "\(.link)|\(.hash)"' _data/downloads.yml | grep -v github |
+              while read line; do
+                  [ -z "$line" ] && continue
+                  url=$(echo $line | cut -d'|' -f1)
+                  hash=$(echo $line | cut -d'|' -f2)
+                  filename=
+                  case $url in
+                      *gui/win64install) filename=monero-gui-install-win-x64 ;;
+                      *gui/win64) filename=monero-gui-win-x64 ;;
+                      *gui/mac64) filename=monero-gui-mac-x64 ;;
+                      *gui/macarm8) filename=monero-gui-mac-armv8 ;;
+                      *gui/linux64) filename=monero-gui-linux-x64 ;;
+                      *gui/source) filename=monero-gui-source ;;
+                      *cli/win64) filename=monero-win-x64 ;;
+                      *cli/win32) filename=monero-win-x86 ;;
+                      *cli/mac64) filename=monero-mac-x64 ;;
+                      *cli/macarm8) filename=monero-mac-armv8 ;;
+                      *cli/linux64) filename=monero-linux-x64 ;;
+                      *cli/linux32) filename=monero-linux-x86 ;;
+                      *cli/linuxarm8) filename=monero-linux-armv8 ;;
+                      *cli/linuxarm7) filename=monero-linux-armv7 ;;
+                      *cli/linuxriscv64) filename=monero-linux-riscv64 ;;
+                      *cli/androidarm8) filename=monero-android-armv8 ;;
+                      *cli/androidarm7) filename=monero-android-armv7 ;;
+                      *cli/freebsd64) filename=monero-freebsd-x64 ;;
+                      *cli/source) filename=monero-source ;;
+                      *)
+                          echo "Unknown url $url" >&2
+                          exit 1
+                      ;;
+                  esac
+                  filename=$(awk "/${filename}/ {print \$2}" downloads/hashes.txt)
+                  echo "$hash  $filename" | sha256sum -c
+              done
+      - name: Validate source integrity
+        run: |
+          version_gui=$(awk '/monero-gui-source-v/ {print $2}' downloads/hashes.txt | awk -F".tar.bz2" '{print $1}' | awk -F"-" '{print $4}')
+          version_cli=$(awk '/monero-source-v/ {print $2}' downloads/hashes.txt | awk -F".tar.bz2" '{print $1}' | awk -F"-" '{print $3}')
+          echo -e "\n--> GUI version: $version_gui \n--> CLI version: $version_cli"
+          mkdir validate_sources
+          cd validate_sources
+          # Download / verify git-archive-all.sh
+          curl -O https://raw.githubusercontent.com/fabacab/git-archive-all.sh/fc86194f00b678438f9210859597f6eead28e765/git-archive-all.sh
+          echo "db62e9a824866989c9d080f008ec06d81421cf94bed3762acba3b9148607af2d git-archive-all.sh" | sha256sum -c
+          chmod +x git-archive-all.sh
+          echo -e "--> Generating tarballs..."
+          # CLI
+          git clone --recursive -b $version_cli --depth 1 --shallow-submodule https://github.com/monero-project/monero.git monero.git && cd monero.git && ../git-archive-all.sh --prefix monero-source-${version_cli}/ --format tar --tree-ish $version_cli ../monero-source-${version_cli}.tar && cd .. && bzip2 monero-source-${version_cli}.tar
+          # GUI
+          git clone --recursive -b $version_gui --depth 1 --shallow-submodule https://github.com/monero-project/monero-gui.git monero-gui.git && cd monero-gui.git && ../git-archive-all.sh --prefix monero-gui-source-${version_gui}/ --format tar --tree-ish $version_gui ../monero-gui-source-${version_gui}.tar && cd .. && bzip2 monero-gui-source-${version_gui}.tar
+          mkdir yours
+          cp monero-gui-source-${version_gui}.tar.bz2 yours/.
+          cp monero-source-${version_cli}.tar.bz2 yours/.
+          mkdir from_website
+          echo -e "\n--> Move tarballs from getmonero..."
+          mv ../monero-gui-source-${version_gui}.tar.bz2 from_website/.
+          mv ../monero-source-${version_cli}.tar.bz2 from_website/.
+          echo -e "\n--> Unpacking all..."
+          bunzip2 yours/*.bz2
+          bunzip2 from_website/*.bz2
+          tar xf yours/monero-source-${version_cli}.tar -C yours/
+          tar xf yours/monero-gui-source-${version_gui}.tar -C yours/
+          tar xf from_website/monero-source-${version_cli}.tar -C from_website/
+          tar xf from_website/monero-gui-source-${version_gui}.tar -C from_website
+          # Compare directories
+          echo -e "\n--> Comparing CLI directories"
+          diff -r yours/monero-source-$version_cli from_website/monero-source-$version_cli
+          echo -e "\n--> Comparing GUI directories"
+          diff -r yours/monero-gui-source-$version_gui from_website/monero-gui-source-$version_gui
